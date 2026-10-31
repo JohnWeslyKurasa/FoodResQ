@@ -3,7 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const { Server } = require('socket.io');
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 const connectDB = require('./config/db');
 const { setSocketIO } = require('./services/notificationService');
@@ -48,8 +49,21 @@ io.on('connection', (socket) => {
 });
 
 // Middleware
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  process.env.CLIENT_URL,
+].filter(Boolean);
+
 app.use(cors({
-  origin: '*',
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
+    return callback(null, true); // Allow all in case of misconfigured origins
+  },
   credentials: true,
 }));
 app.use(express.json());

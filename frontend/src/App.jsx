@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SocketProvider, useSocket } from './context/SocketContext';
 import Navbar from './components/Navbar';
@@ -12,12 +13,20 @@ import OrganizationsDirectory from './pages/OrganizationsDirectory';
 import AboutPage from './pages/AboutPage';
 import AuthModal from './components/AuthModal';
 import SearchModal from './components/SearchModal';
-import { Bell, CheckCircle, Info } from 'lucide-react';
+import { Bell } from 'lucide-react';
+
+function ProtectedRoute({ children, allowedRoles }) {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user) return <Navigate to="/" replace />;
+  if (allowedRoles && !allowedRoles.includes(user.role)) return <Navigate to="/" replace />;
+  return children;
+}
 
 function AppContent() {
   const { user } = useAuth();
   const { latestToast, setLatestToast } = useSocket();
-  const [currentView, setCurrentView] = useState('home');
+  const navigate = useNavigate();
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [authTab, setAuthTab] = useState('login');
   const [authDefaultRole, setAuthDefaultRole] = useState('donor');
@@ -29,55 +38,75 @@ function AppContent() {
     setIsAuthOpen(true);
   };
 
-  // Sync view when user logs out from a dashboard
-  React.useEffect(() => {
-    if (!user) {
-      if (['donor-dashboard', 'ngo-dashboard', 'volunteer-dashboard', 'admin-dashboard'].includes(currentView)) {
-        setCurrentView('home');
-      }
-    }
-  }, [user]);
-
-  const renderCurrentView = () => {
-    switch (currentView) {
-      case 'home':
-        return <Home onNavigate={setCurrentView} onOpenAuth={handleOpenAuth} />;
-      case 'how-it-works':
-        return <Home onNavigate={setCurrentView} onOpenAuth={handleOpenAuth} />;
-      case 'listings':
-        return <NgoDashboard key={`listings-${user?._id || 'guest'}`} />;
-      case 'organizations':
-        return <OrganizationsDirectory onOpenAuth={handleOpenAuth} />;
-      case 'impact':
-        return <ImpactPage />;
-      case 'about':
-        return <AboutPage />;
-      case 'donor-dashboard':
-        return <DonorDashboard key={`donor-${user?._id || 'none'}`} />;
-      case 'ngo-dashboard':
-        return <NgoDashboard key={`ngo-${user?._id || 'none'}`} />;
-      case 'volunteer-dashboard':
-        return <VolunteerDashboard key={`volunteer-${user?._id || 'none'}`} />;
-      case 'admin-dashboard':
-        return <AdminDashboard key={`admin-${user?._id || 'none'}`} />;
-      default:
-        return <Home onNavigate={setCurrentView} onOpenAuth={handleOpenAuth} />;
-    }
+  const handleNavigate = (viewId) => {
+    const viewToRoute = {
+      'home': '/',
+      'how-it-works': '/#how-it-works',
+      'listings': '/listings',
+      'organizations': '/organizations',
+      'impact': '/impact',
+      'about': '/about',
+      'donor-dashboard': '/dashboard/donor',
+      'ngo-dashboard': '/dashboard/ngo',
+      'volunteer-dashboard': '/dashboard/volunteer',
+      'admin-dashboard': '/dashboard/admin',
+    };
+    const route = viewToRoute[viewId] || '/';
+    navigate(route);
   };
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Sticky Navigation Bar */}
       <Navbar
-        currentView={currentView}
-        setCurrentView={setCurrentView}
+        onNavigate={handleNavigate}
         onOpenAuth={() => handleOpenAuth('login')}
         onOpenSearch={() => setIsSearchOpen(true)}
       />
 
       {/* Main View Display */}
       <main style={{ flex: 1 }}>
-        {renderCurrentView()}
+        <Routes>
+          <Route path="/" element={<Home onNavigate={handleNavigate} onOpenAuth={handleOpenAuth} />} />
+          <Route path="/listings" element={<NgoDashboard key={`listings-${user?._id || 'guest'}`} />} />
+          <Route path="/organizations" element={<OrganizationsDirectory onOpenAuth={handleOpenAuth} />} />
+          <Route path="/impact" element={<ImpactPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route
+            path="/dashboard/donor"
+            element={
+              <ProtectedRoute allowedRoles={['donor']}>
+                <DonorDashboard key={`donor-${user?._id || 'none'}`} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/ngo"
+            element={
+              <ProtectedRoute allowedRoles={['recipient']}>
+                <NgoDashboard key={`ngo-${user?._id || 'none'}`} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/volunteer"
+            element={
+              <ProtectedRoute allowedRoles={['volunteer']}>
+                <VolunteerDashboard key={`volunteer-${user?._id || 'none'}`} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/admin"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminDashboard key={`admin-${user?._id || 'none'}`} />
+              </ProtectedRoute>
+            }
+          />
+          {/* Catch-all fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </main>
 
       {/* Real-Time Floating Toast Notification */}
@@ -127,12 +156,12 @@ function AppContent() {
         defaultRole={authDefaultRole}
         onLoginSuccess={(role) => {
           const map = {
-            donor: 'donor-dashboard',
-            recipient: 'ngo-dashboard',
-            volunteer: 'volunteer-dashboard',
-            admin: 'admin-dashboard',
+            donor: '/dashboard/donor',
+            recipient: '/dashboard/ngo',
+            volunteer: '/dashboard/volunteer',
+            admin: '/dashboard/admin',
           };
-          setCurrentView(map[role] || 'home');
+          navigate(map[role] || '/');
         }}
       />
 
@@ -141,7 +170,7 @@ function AppContent() {
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
         onSelectListing={(listing) => {
-          setCurrentView('listings');
+          navigate('/listings');
         }}
       />
     </div>

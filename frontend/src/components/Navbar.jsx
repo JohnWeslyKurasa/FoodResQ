@@ -1,47 +1,69 @@
 import React, { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import RoleSwitcher from './RoleSwitcher';
 import NotificationDropdown from './NotificationDropdown';
-import { Bell, Search, Menu, X, LayoutDashboard, LogOut, Heart, ShieldCheck } from 'lucide-react';
+import { Bell, Search, Menu, X, LayoutDashboard, LogOut } from 'lucide-react';
 
-export default function Navbar({ currentView, setCurrentView, onOpenAuth, onOpenSearch }) {
+export default function Navbar({ onNavigate, onOpenAuth, onOpenSearch }) {
   const { user, logout } = useAuth();
   const { unreadCount } = useSocket();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const getDashboardViewForRole = (role) => {
+  const getDashboardRouteForRole = (role) => {
     switch (role) {
-      case 'donor':
-        return 'donor-dashboard';
-      case 'recipient':
-        return 'ngo-dashboard';
-      case 'volunteer':
-        return 'volunteer-dashboard';
-      case 'admin':
-        return 'admin-dashboard';
-      default:
-        return 'home';
+      case 'donor': return '/dashboard/donor';
+      case 'recipient': return '/dashboard/ngo';
+      case 'volunteer': return '/dashboard/volunteer';
+      case 'admin': return '/dashboard/admin';
+      default: return '/';
     }
   };
 
   const navLinks = [
-    { id: 'home', label: 'Home' },
-    { id: 'how-it-works', label: 'How It Works' },
-    { id: 'listings', label: 'Food Listings' },
-    { id: 'organizations', label: 'Organizations' },
-    { id: 'impact', label: 'Impact' },
-    { id: 'about', label: 'About' },
+    { to: '/', label: 'Home' },
+    { to: '/#how-it-works', label: 'How It Works' },
+    { to: '/listings', label: 'Food Listings' },
+    { to: '/organizations', label: 'Organizations' },
+    { to: '/impact', label: 'Impact' },
+    { to: '/about', label: 'About' },
   ];
+
+  const isActive = (to) => {
+    if (to === '/') return location.pathname === '/';
+    if (to.startsWith('/#')) return location.pathname === '/' && location.hash === to.replace('/', '');
+    return location.pathname === to;
+  };
+
+  const handleNavClick = (to) => {
+    setMobileMenuOpen(false);
+    if (to.startsWith('/#')) {
+      navigate('/');
+      setTimeout(() => {
+        const el = document.getElementById(to.replace('/#', ''));
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } else {
+      navigate(to);
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   return (
     <header className="navbar-sticky">
       <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '76px' }}>
         {/* Brand Logo */}
-        <div
-          onClick={() => setCurrentView('home')}
-          style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', userSelect: 'none' }}
+        <Link
+          to="/"
+          style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', userSelect: 'none', textDecoration: 'none' }}
         >
           {/* Logo Icon: Green Leaf + Orange Bowl */}
           <div
@@ -74,25 +96,28 @@ export default function Navbar({ currentView, setCurrentView, onOpenAuth, onOpen
               Rescue Food. Feed Lives.
             </p>
           </div>
-        </div>
+        </Link>
 
         {/* Desktop Navigation Links */}
         <nav className="hide-on-mobile" style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
           {navLinks.map((link) => (
             <button
-              key={link.id}
-              onClick={() => setCurrentView(link.id)}
+              key={link.to}
+              onClick={() => handleNavClick(link.to)}
               style={{
                 fontSize: '0.92rem',
-                fontWeight: currentView === link.id ? 700 : 500,
-                color: currentView === link.id ? 'var(--primary-orange)' : 'var(--dark-text)',
+                fontWeight: isActive(link.to) ? 700 : 500,
+                color: isActive(link.to) ? 'var(--primary-orange)' : 'var(--dark-text)',
                 padding: '6px 0',
                 position: 'relative',
                 transition: 'var(--transition)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
               }}
             >
               {link.label}
-              {currentView === link.id && (
+              {isActive(link.to) && (
                 <span
                   style={{
                     position: 'absolute',
@@ -135,9 +160,9 @@ export default function Navbar({ currentView, setCurrentView, onOpenAuth, onOpen
           <RoleSwitcher
             onRoleSwitched={(newRole) => {
               if (newRole) {
-                setCurrentView(getDashboardViewForRole(newRole));
+                navigate(getDashboardRouteForRole(newRole));
               } else {
-                setCurrentView('home');
+                navigate('/');
               }
             }}
           />
@@ -194,7 +219,7 @@ export default function Navbar({ currentView, setCurrentView, onOpenAuth, onOpen
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <button
-                onClick={() => setCurrentView(getDashboardViewForRole(user.role))}
+                onClick={() => navigate(getDashboardRouteForRole(user.role))}
                 className="btn-forest btn-sm"
                 style={{ gap: '6px' }}
               >
@@ -203,7 +228,7 @@ export default function Navbar({ currentView, setCurrentView, onOpenAuth, onOpen
               </button>
 
               <button
-                onClick={logout}
+                onClick={handleLogout}
                 title="Log Out"
                 style={{
                   width: '38px',
@@ -257,17 +282,17 @@ export default function Navbar({ currentView, setCurrentView, onOpenAuth, onOpen
         >
           {navLinks.map((link) => (
             <button
-              key={link.id}
-              onClick={() => {
-                setCurrentView(link.id);
-                setMobileMenuOpen(false);
-              }}
+              key={link.to}
+              onClick={() => handleNavClick(link.to)}
               style={{
                 textAlign: 'left',
                 fontSize: '1rem',
-                fontWeight: currentView === link.id ? 700 : 500,
-                color: currentView === link.id ? 'var(--primary-orange)' : 'var(--dark-text)',
+                fontWeight: isActive(link.to) ? 700 : 500,
+                color: isActive(link.to) ? 'var(--primary-orange)' : 'var(--dark-text)',
                 padding: '8px 0',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
               }}
             >
               {link.label}
@@ -276,7 +301,7 @@ export default function Navbar({ currentView, setCurrentView, onOpenAuth, onOpen
           {user && (
             <button
               onClick={() => {
-                setCurrentView(getDashboardViewForRole(user.role));
+                navigate(getDashboardRouteForRole(user.role));
                 setMobileMenuOpen(false);
               }}
               className="btn-forest"
