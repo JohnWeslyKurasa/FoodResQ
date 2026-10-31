@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import LocationPickerMap from './LocationPickerMap';
 import {
   X, LogIn, UserPlus, ChefHat, HeartHandshake, Bike,
   Building, MapPin, Phone, Mail, Lock, User, Utensils,
@@ -67,6 +68,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login', defau
   const [organizationName, setOrganizationName] = useState('');
   const [organizationType, setOrganizationType] = useState('');
   const [address, setAddress] = useState('');
+  const [coordinates, setCoordinates] = useState({ lat: 17.4483, lng: 78.3826 });
 
   // Role-specific fields
   const [servingCapacity, setServingCapacity] = useState('');
@@ -134,6 +136,8 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login', defau
         organizationName: organizationName || name,
         organizationType,
         address,
+        latitude: coordinates.lat,
+        longitude: coordinates.lng,
       };
 
       // Add role-specific data
@@ -459,7 +463,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login', defau
                 </select>
               </div>
 
-              {/* Address */}
+              {/* Address with Map Location Picker */}
               <div style={{ marginBottom: '10px' }}>
                 <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 600, color: 'var(--dark-text)', marginBottom: '4px' }}>
                   {role === 'volunteer' ? 'Your Area / Locality *' : 'Facility Address *'}
@@ -471,6 +475,17 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login', defau
                     style={{ ...inputStyle, padding: '9px 12px 9px 34px', fontSize: '0.84rem' }} />
                 </div>
               </div>
+
+              {/* Interactive Precision Map */}
+              <LocationPickerMap
+                initialLat={coordinates.lat}
+                initialLng={coordinates.lng}
+                currentAddress={address}
+                onLocationSelected={({ lat, lng, address: newAddr }) => {
+                  setCoordinates({ lat, lng });
+                  if (newAddr) setAddress(newAddr);
+                }}
+              />
 
               {/* === DONOR-SPECIFIC: Avg daily surplus === */}
               {role === 'donor' && (

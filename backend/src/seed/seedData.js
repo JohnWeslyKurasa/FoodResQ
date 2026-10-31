@@ -21,7 +21,7 @@ const seedDatabase = async () => {
     ]);
 
     console.log('[FoodResQ Seed] Creating initial demo accounts...');
-    const hashedPassword = await bcrypt.hash('password123', 10);
+    const hashedPassword = 'password123';
 
     // 1. Admin
     const admin = await User.create({
