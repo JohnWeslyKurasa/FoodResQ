@@ -3,13 +3,6 @@ import { api } from '../services/api';
 
 const AuthContext = createContext(null);
 
-const DEMO_CREDENTIALS = {
-  donor: { email: 'donor@foodresq.org', password: 'password123' },
-  recipient: { email: 'ngo@foodresq.org', password: 'password123' },
-  volunteer: { email: 'volunteer@foodresq.org', password: 'password123' },
-  admin: { email: 'admin@foodresq.org', password: 'password123' },
-};
-
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(() => localStorage.getItem('foodresq_token'));
@@ -66,12 +59,6 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
-  const switchRoleDemo = async (role) => {
-    const creds = DEMO_CREDENTIALS[role];
-    if (!creds) return;
-    return await login(creds.email, creds.password);
-  };
-
   const refreshUser = async () => {
     if (!token) return;
     try {
@@ -94,7 +81,6 @@ export function AuthProvider({ children }) {
         login,
         register,
         logout,
-        switchRoleDemo,
         refreshUser,
       }}
     >

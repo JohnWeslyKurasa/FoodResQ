@@ -23,6 +23,9 @@ exports.register = async (req, res) => {
       longitude,
       servingCapacity,
       preferredCategories,
+      avgDailyMeals,
+      vehicleType,
+      availability,
     } = req.body;
 
     if (!name || !email || !password || !phone || !address) {
@@ -52,7 +55,7 @@ exports.register = async (req, res) => {
       phone,
       role,
       organizationName: organizationName || (role === 'volunteer' ? 'Individual Volunteer' : name),
-      organizationType: organizationType || (role === 'recipient' ? 'NGO' : 'Restaurant'),
+      organizationType: organizationType || (role === 'recipient' ? 'NGO' : role === 'volunteer' ? 'Individual Volunteer' : 'Restaurant'),
       address,
       location: {
         type: 'Point',
@@ -60,7 +63,10 @@ exports.register = async (req, res) => {
       },
       servingCapacity: servingCapacity ? parseInt(servingCapacity, 10) : 50,
       preferredCategories: preferredCategories || ['Vegetarian', 'Non-Vegetarian', 'Bakery', 'Fruits', 'Vegetables'],
-      isVerified: role === 'admin' || role === 'donor', // Demo convenience: donors start verified
+      avgDailyMeals: avgDailyMeals ? parseInt(avgDailyMeals, 10) : 0,
+      vehicleType: vehicleType || '',
+      availability: availability || '',
+      isVerified: true,
     });
 
     const token = signToken(user._id);
@@ -81,6 +87,9 @@ exports.register = async (req, res) => {
         isVerified: user.isVerified,
         servingCapacity: user.servingCapacity,
         preferredCategories: user.preferredCategories,
+        avgDailyMeals: user.avgDailyMeals,
+        vehicleType: user.vehicleType,
+        availability: user.availability,
       },
     });
   } catch (error) {
@@ -138,6 +147,9 @@ exports.login = async (req, res) => {
         isVerified: user.isVerified,
         servingCapacity: user.servingCapacity,
         preferredCategories: user.preferredCategories,
+        avgDailyMeals: user.avgDailyMeals,
+        vehicleType: user.vehicleType,
+        availability: user.availability,
         avatar: user.avatar,
       },
     });

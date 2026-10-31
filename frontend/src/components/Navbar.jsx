@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
-import RoleSwitcher from './RoleSwitcher';
 import NotificationDropdown from './NotificationDropdown';
 import { Bell, Search, Menu, X, LayoutDashboard, LogOut } from 'lucide-react';
 
@@ -155,17 +154,6 @@ export default function Navbar({ onNavigate, onOpenAuth, onOpenSearch }) {
           >
             <Search size={18} />
           </button>
-
-          {/* Persona Switcher Pill */}
-          <RoleSwitcher
-            onRoleSwitched={(newRole) => {
-              if (newRole) {
-                navigate(getDashboardRouteForRole(newRole));
-              } else {
-                navigate('/');
-              }
-            }}
-          />
 
           {/* Notifications Button */}
           {user && (

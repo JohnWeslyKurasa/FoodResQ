@@ -37,10 +37,6 @@ const userSchema = new mongoose.Schema({
   },
   organizationType: {
     type: String,
-    enum: [
-      'Restaurant', 'Hotel', 'Caterer', 'Grocery Store', 'Bakery', 'Community Kitchen',
-      'NGO', 'Charity', 'Shelter', 'Food Bank', 'Individual Volunteer', 'Other'
-    ],
     default: 'Restaurant',
   },
   address: {
@@ -65,6 +61,18 @@ const userSchema = new mongoose.Schema({
   preferredCategories: {
     type: [String],
     default: ['Vegetarian', 'Non-Vegetarian', 'Bakery', 'Fruits', 'Vegetables', 'Dairy', 'Packaged Food'],
+  },
+  avgDailyMeals: {
+    type: Number,
+    default: 0,
+  },
+  vehicleType: {
+    type: String,
+    default: '',
+  },
+  availability: {
+    type: String,
+    default: '',
   },
   isVerified: {
     type: Boolean,
