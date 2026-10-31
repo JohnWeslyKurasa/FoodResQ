@@ -63,26 +63,114 @@ Transparent, deterministic rule-based scoring engine (0–100%) showing the brea
 
 ---
 
-## 🔑 Demo Credentials (1-Click Switcher Available in UI)
+## 🏗️ System Architecture Diagram
 
-| Role | Organization / Persona | Email | Password |
-| :--- | :--- | :--- | :--- |
-| **Donor** | Paradise Biryani House (Chef Suresh Reddy) | `donor@foodresq.org` | `password123` |
-| **Recipient (NGO)** | Akshaya Meals Foundation (Kavita Menon) | `ngo@foodresq.org` | `password123` |
-| **Volunteer** | City Rescue Fleet (Vikram Rao) | `volunteer@foodresq.org` | `password123` |
-| **Admin** | FoodResQ Platform Trust & Safety (Rohan Varma) | `admin@foodresq.org` | `password123` |
+```mermaid
+graph TD
+    Client["Frontend Clients (React 19 + Vite)<br/>(Donors, NGOs, Volunteers, Admin)"]
+    CDN["Vercel Global Edge CDN"]
+    API["Backend REST API (Node.js + Express.js)<br/>Hosted on Render"]
+    Socket["Socket.IO Real-Time Event Bus"]
+    DB[("MongoDB Atlas Cloud Database<br/>(2dsphere Geospatial Index)")]
+    Maps["OpenStreetMap / Leaflet Tile Server"]
+    Geo["Nominatim Reverse Geocoding API"]
 
-*(You can also use the **"⚡ 1-Click Demo Accounts"** button in the top navigation bar to switch between personas instantly without typing.)*
+    Client --> CDN
+    CDN --> API
+    Client <--> Socket
+    API <--> Socket
+    API <--> DB
+    Client <--> Maps
+    Client <--> Geo
+```
+
+---
+
+## 🗄️ Database Design / ER Diagram
+
+```mermaid
+erDiagram
+    USER ||--o{ DONATION : posts
+    USER ||--o{ REQUEST : claims
+    USER ||--o{ REQUEST : delivers_as_volunteer
+    DONATION ||--o{ REQUEST : fulfills
+    REQUEST ||--o| DONATION_HISTORY : archives_as_verified
+    USER ||--o{ NOTIFICATION : receives
+
+    USER {
+        ObjectId _id PK
+        string name
+        string email
+        string password
+        string role "donor | recipient | volunteer | admin"
+        string organizationName
+        string organizationType
+        string address
+        GeoPoint location "type: Point, coordinates: [lng, lat]"
+        number servingCapacity
+        number avgDailyMeals
+        string vehicleType
+        boolean isVerified
+    }
+
+    DONATION {
+        ObjectId _id PK
+        ObjectId donorId FK
+        string title
+        string category "Vegetarian | Non-Vegetarian | Bakery | etc."
+        number quantity
+        string quantityUnit
+        date preparationTime
+        date pickupEndTime
+        string urgency "normal | urgent | critical"
+        string status "AVAILABLE | RESERVED | COMPLETED"
+        GeoPoint location
+    }
+
+    REQUEST {
+        ObjectId _id PK
+        ObjectId donationId FK
+        ObjectId recipientId FK
+        ObjectId volunteerId FK
+        number requestedQuantity
+        string status "PENDING | ACCEPTED | PICKUP_IN_PROGRESS | COMPLETED"
+        string pickupOtpHash
+        string rawOtp
+        date otpExpiresAt
+        boolean isOtpVerified
+    }
+
+    DONATION_HISTORY {
+        ObjectId _id PK
+        ObjectId donationId FK
+        ObjectId donorId FK
+        ObjectId recipientId FK
+        ObjectId volunteerId FK
+        number verifiedQuantity
+        number co2SavedKg
+        date completedAt
+    }
+```
+
+---
+
+## 🔑 Administrator & Testing Credentials
+
+| Role | Organization / Persona | Email | Password | Access Level |
+| :--- | :--- | :--- | :--- | :--- |
+| **Admin** | FoodResQ Platform Trust & Safety (Rohan Varma) | `admin@foodresq.org` | `password123` | Full admin moderation & analytics |
+| **Donor** | Paradise Biryani House (Chef Suresh Reddy) | `donor@foodresq.org` | `password123` | Surplus food creation & management |
+| **Recipient (NGO)** | Akshaya Meals Foundation (Kavita Menon) | `ngo@foodresq.org` | `password123` | Claiming food & viewing OTP token |
+| **Volunteer** | City Rescue Fleet (Vikram Rao) | `volunteer@foodresq.org` | `password123` | Delivery route & OTP verification |
 
 ---
 
 ## 🛠️ Technology Stack
 
 - **Frontend**: React 19, Vite, Vanilla CSS design system, Lucide React, Leaflet & React-Leaflet, Recharts, Canvas-Confetti, Socket.IO Client.
-- **Backend**: Node.js, Express.js REST API (`/api/v1`), MongoDB Atlas & local Mongoose with 2dsphere geospatial indexing, JWT Authentication, bcryptjs, Socket.IO, QRCode.
+- **Backend**: Node.js, Express.js REST API (`/api/v1`), MongoDB Atlas with `2dsphere` geospatial indexing, JWT Authentication, bcryptjs, Socket.IO, QRCode.
 - **Real-Time Push**: Socket.IO bi-directional notification engine with document persistence.
-
----
+- **Documentation**: [API Documentation](API_DOCUMENTATION.md) for full endpoint specifications.
 
 ## 🚀 Getting Started
 
