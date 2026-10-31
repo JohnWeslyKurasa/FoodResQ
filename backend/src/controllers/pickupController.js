@@ -79,6 +79,14 @@ exports.verifyPickup = async (req, res) => {
       });
     }
 
+    // Role enforcement: OTP must be verified by the volunteer (or donor/admin), never by the recipient
+    if (req.user.role === 'recipient') {
+      return res.status(403).json({
+        success: false,
+        message: 'The recipient cannot verify their own OTP. The pickup OTP must be verified by the assigned rescue volunteer upon physical handover.',
+      });
+    }
+
     if (!request.pickupOtpHash) {
       return res.status(400).json({
         success: false,
