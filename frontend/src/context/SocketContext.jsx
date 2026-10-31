@@ -5,7 +5,7 @@ import { api } from '../services/api';
 
 const SocketContext = createContext(null);
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || (window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://foodresq-b9nq.onrender.com');
 
 export function SocketProvider({ children }) {
   const { user } = useAuth();
