@@ -25,7 +25,7 @@ export default function Navbar({ onNavigate, onOpenAuth, onOpenSearch }) {
 
   const navLinks = [
     { to: '/', label: 'Home' },
-    { to: '/#how-it-works', label: 'How It Works' },
+    { to: '/how-it-works', label: 'How It Works' },
     { to: '/listings', label: 'Food Listings' },
     { to: '/organizations', label: 'Organizations' },
     { to: '/impact', label: 'Impact' },

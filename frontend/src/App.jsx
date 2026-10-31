@@ -11,6 +11,8 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import ImpactPage from './pages/impact/ImpactPage';
 import OrganizationsDirectory from './pages/OrganizationsDirectory';
 import AboutPage from './pages/AboutPage';
+import HowItWorksPage from './pages/HowItWorksPage';
+import FoodListingsPage from './pages/FoodListingsPage';
 import AuthModal from './components/AuthModal';
 import SearchModal from './components/SearchModal';
 import { Bell } from 'lucide-react';
@@ -41,7 +43,7 @@ function AppContent() {
   const handleNavigate = (viewId) => {
     const viewToRoute = {
       'home': '/',
-      'how-it-works': '/#how-it-works',
+      'how-it-works': '/how-it-works',
       'listings': '/listings',
       'organizations': '/organizations',
       'impact': '/impact',
@@ -68,7 +70,8 @@ function AppContent() {
       <main style={{ flex: 1 }}>
         <Routes>
           <Route path="/" element={<Home onNavigate={handleNavigate} onOpenAuth={handleOpenAuth} />} />
-          <Route path="/listings" element={<NgoDashboard key={`listings-${user?._id || 'guest'}`} />} />
+          <Route path="/how-it-works" element={<HowItWorksPage onOpenAuth={handleOpenAuth} />} />
+          <Route path="/listings" element={<FoodListingsPage onOpenAuth={handleOpenAuth} onNavigate={handleNavigate} />} />
           <Route path="/organizations" element={<OrganizationsDirectory onOpenAuth={handleOpenAuth} />} />
           <Route path="/impact" element={<ImpactPage />} />
           <Route path="/about" element={<AboutPage />} />

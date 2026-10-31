@@ -69,6 +69,7 @@ export const api = {
   getRecipientDashboard: () => request('/dashboard/recipient'),
   getVolunteerDashboard: () => request('/dashboard/volunteer'),
   getImpactAnalytics: () => request('/dashboard/impact'),
+  getPublicOrganizations: () => request('/dashboard/organizations'),
 
   // Admin
   getAdminStats: () => request('/admin/stats'),

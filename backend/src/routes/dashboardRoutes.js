@@ -7,5 +7,6 @@ router.get('/donor', protect, authorize('donor', 'admin'), dashboardController.g
 router.get('/recipient', protect, authorize('recipient', 'admin'), dashboardController.getRecipientDashboard);
 router.get('/volunteer', protect, authorize('volunteer', 'admin'), dashboardController.getVolunteerDashboard);
 router.get('/impact', dashboardController.getImpactAnalytics);
+router.get('/organizations', dashboardController.getPublicOrganizations);
 
 module.exports = router;

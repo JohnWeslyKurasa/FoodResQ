@@ -38,7 +38,7 @@ export default function HowItWorks({ onGetStarted }) {
   ];
 
   return (
-    <section style={{ padding: '80px 0', background: '#FFFFFF', borderBottom: '1px solid var(--border-color)' }}>
+    <section id="how-it-works" style={{ padding: '80px 0', background: '#FFFFFF', borderBottom: '1px solid var(--border-color)' }}>
       <div className="container">
         {/* Section Header */}
         <div style={{ textAlign: 'center', maxWidth: '640px', margin: '0 auto 50px' }}>

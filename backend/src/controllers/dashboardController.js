@@ -257,3 +257,25 @@ exports.getImpactAnalytics = async (req, res) => {
     });
   }
 };
+
+// GET /api/v1/dashboard/organizations (Public Directory)
+exports.getPublicOrganizations = async (req, res) => {
+  try {
+    const orgs = await User.find({
+      role: { $in: ['donor', 'recipient', 'volunteer'] },
+      isSuspended: false,
+    }).select('name organizationName organizationType role address location isVerified rating avatar phone servingCapacity preferredCategories avgDailyMeals vehicleType availability');
+
+    res.status(200).json({
+      success: true,
+      organizations: orgs,
+    });
+  } catch (error) {
+    console.error('[Public Organizations Error]:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve organizations directory.',
+    });
+  }
+};
+
